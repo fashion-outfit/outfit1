@@ -1,4 +1,4 @@
-# Project Codenamed 'outfit1'
+# Project Codename 'outfit1'
 ## Introduction
 This is the repoistory of a WeChat Mini-program performing outfit composition task, whose idea was firstly carried out by Jing Deng.
 
