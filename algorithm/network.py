@@ -103,3 +103,39 @@ def PNet(x, reuse=False):
         x = FC(x, 128, reuse)
         x = FC(x, 100, reuse)
         return x
+
+
+class AutoEncoderModule():
+    def __init__(self, I, reuse=False):
+        with tf.variable_scope('auto encoder modeule', reuse=reuse):
+            self.r1 = ENet_type1(I, reuse)
+            self.r2 = ENet_type2(I, reuse)
+            self.r3 = ENet_type3(I, reuse)
+            R = tf.concat([self.r1, self.r2, self.r3], 0)
+            self.I_ = DNet(R, reuse)
+
+
+class MultiIndependentModule():
+    def __init__(self, I, reuse=False):
+        with tf.variable_scope('multi independent module', reuse=reuse):
+            self.r1 = ENet_type1(I, reuse)
+            self.r2 = ENet_type2(I, reuse)
+            self.r3 = ENet_type3(I, reuse)
+            R = tf.concat([self.r1, self.r2, self.r3], 0)
+            self.part1 = PNet(R, reuse)
+            self.part2 = PNet(R, reuse)
+            self.part3 = PNet(R, reuse)
+
+
+class SupervisedAttributesModule():
+    def __init__(self, I, reuse=False):
+        with tf.variable_scope('supervised attributes module', reuse=reuse):
+            self.r1 = ENet_type1(I, reuse)
+            self.r2 = ENet_type2(I, reuse)
+            self.r3 = ENet_type3(I, reuse)
+            R = tf.concat([self.r1, self.r2, self.r3], 0)
+            self.part1 = PNet(R, reuse)
+            self.part2 = PNet(R, reuse)
+            self.part3 = PNet(R, reuse)
+            self.label1 = ANet_type1(self.part1, reuse)
+            self.label2 = ANet_type2(self.part2, reuse)

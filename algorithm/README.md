@@ -10,3 +10,6 @@ A reoccurance of [Interpretable Partitioned Embedding for Customized Fashion Out
     "app.py": "Kick-start of the whole trained model"
 }
 ```
+
+## Note
+Because we use the DeepFashion dataset, the embedding network is now focused on three main attributes: style, shape and remaining. This is slightly different from the original model.
