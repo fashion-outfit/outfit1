@@ -1,3 +1,5 @@
 .vscode/
 .idea/
 Anno/
+img/
+__pycache__/
