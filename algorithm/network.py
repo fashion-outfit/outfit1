@@ -1,151 +1,305 @@
-import numpy as np
 import tensorflow as tf
 import tensorlayer as tl
 
 
-def C(x, n_filter, reuse=False):
-    with tf.variable_scope('Convolution', reuse=reuse):
-        x = tl.layers.Conv2d(x, n_filter, (4, 4), (2, 2))
-        x = tl.layers.DownSampling2dLayer(x, 2)
-        x = tl.layers.BatchNormLayer(x)
-        x = tf.nn.relu(x)
-        return x
-
-
-def CD(x, n_filter, reuse=False):
-    with tf.variable_scope('ConvolutionDropout', reuse=reuse):
-        x = tl.layers.Conv2d(x, n_filter, (4, 4), (2, 2))
-        x = tl.layers.DownSampling2dLayer(x, (2, 2))
-        x = tl.layers.BatchNormLayer(x)
-        x = tl.layers.DropoutLayer(x, 0.7)
-        x = tf.nn.relu(x)
-        return x
-
-
-def DC(x, n_filter, reuse=False):
-    with tf.variable_scope('Deconvolution', reuse=reuse):
-        x = tl.layers.DeConv2d(x, n_filter)
-        x = tl.layers.UpSampling2dLayer(x, (2, 2))
-        x = tf.nn.relu(x)
-        return x
-
-
-def FC(x, n_units, reuse=False):
-    with tf.variable_scope('FullConnection', reuse=reuse):
-        x = tl.layers.DenseLayer(x, n_units)
-        return x
-
-
-def ENet_type1(x, reuse=False):
-    with tf.variable_scope('EncoderNetworkType1', reuse=reuse):
-        x = CD(x, 16, reuse=reuse)
-        x = CD(x, 32, reuse=reuse)
-        x = CD(x, 64, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
-def ENet_type2(x, reuse=False):
-    with tf.variable_scope('EncoderNetworkType2', reuse=reuse):
-        x = CD(x, 16, reuse=reuse)
-        x = CD(x, 32, reuse=reuse)
-        x = CD(x, 64, reuse=reuse)
-        x = CD(x, 64, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
-def ENet_type3(x, reuse=False):
-    with tf.variable_scope('EncoderNetworkType3', reuse=reuse):
-        x = CD(x, 32, reuse=reuse)
-        x = CD(x, 64, reuse=reuse)
-        x = CD(x, 128, reuse=reuse)
-        x = CD(x, 128, reuse=reuse)
-        x = CD(x, 128, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
-def DNet(x, reuse=False):
-    with tf.variable_scope('DecoderNetwork', reuse=reuse):
-        x = DC(x, 128, reuse=reuse)
-        x = DC(x, 128, reuse=reuse)
-        x = DC(x, 64, reuse=reuse)
-        x = DC(x, 32, reuse=reuse)
-        x = DC(x, 1, reuse=reuse)
-        return x
-
-
-def ANet_type1(x, reuse=False):
-    with tf.variable_scope('AttributesNetworkType1', reuse=reuse):
-        G = FC(x, 64, reuse=reuse)
-        G = FC(G, 32, reuse=reuse)
-        G = FC(G, 15, reuse=reuse)
-        D = FC(x, 256, reuse=reuse)
-        D = FC(D, 128, reuse=reuse)
-        D = FC(D, 64, reuse=reuse)
-        D = FC(x, 1, reuse=reuse)
-        return G, D
-
-
-def ANet_type2(x, reuse=False):
-    with tf.variable_scope('AttributesNetworkType2', reuse=reuse):
-        x = C(x, 64, reuse=reuse)
-        x = CD(x, 64, reuse=reuse)
-        x = CD(x, 32, reuse=reuse)
-        x = CD(x, 1, reuse=reuse)
-        return x
-
-
-def PNet_1(x, reuse=False):
-    with tf.variable_scope('AdversarialPredictionNetwork1', reuse=reuse):
-        x = FC(x, 256, reuse=reuse)
-        x = FC(x, 128, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
-def PNet_2(x, reuse=False):
-    with tf.variable_scope('AdversarialPredictionNetwork2', reuse=reuse):
-        x = FC(x, 256, reuse=reuse)
-        x = FC(x, 128, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
-def PNet_3(x, reuse=False):
-    with tf.variable_scope('AdversarialPredictionNetwork3', reuse=reuse):
-        x = FC(x, 256, reuse=reuse)
-        x = FC(x, 128, reuse=reuse)
-        x = FC(x, 100, reuse=reuse)
-        return x
-
-
 def encoder(I, reuse=False):
-    with tf.variable_scope('Encoder', reuse=reuse):
-        r1 = ENet_type1(I, reuse=reuse)
-        r2 = ENet_type2(I, reuse=reuse)
-        r3 = ENet_type3(I, reuse=reuse)
-        R = tf.concat([r1, r2, r3], 0)
-        return R
+
+    with tf.variable_scope('EncoderModule', reuse=reuse):
+        inputLayer = tl.layers.InputLayer(inputs=I,
+                                          name='Input')
+
+        with tf.variable_scope('EncoderNetwork1', reuse=reuse):
+            eNet1 = tl.layers.Conv2d(prev_layer=inputLayer,
+                                     n_filter=16,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu1')
+            eNet1 = tl.layers.BatchNormLayer(prev_layer=eNet1,
+                                             name='BatchNorm1')
+            eNet1 = tl.layers.DropoutLayer(prev_layer=eNet1,
+                                           keep=0.7,
+                                           name='Dropout1')
+
+            eNet1 = tl.layers.Conv2d(prev_layer=eNet1,
+                                     n_filter=32,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu2')
+            eNet1 = tl.layers.BatchNormLayer(prev_layer=eNet1,
+                                             name='BatchNorm2')
+            eNet1 = tl.layers.DropoutLayer(prev_layer=eNet1,
+                                           keep=0.7,
+                                           name='Dropout2')
+
+            eNet1 = tl.layers.Conv2d(prev_layer=eNet1,
+                                     n_filter=64,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu3')
+            eNet1 = tl.layers.BatchNormLayer(prev_layer=eNet1,
+                                             name='BatchNorm3')
+            eNet1 = tl.layers.DropoutLayer(prev_layer=eNet1,
+                                           keep=0.7,
+                                           name='Dropout3')
+
+            eNet1 = tl.layers.FlattenLayer(prev_layer=eNet1,
+                                           name='Flatten')
+            eNet1 = tl.layers.DenseLayer(prev_layer=eNet1,
+                                         n_units=100,
+                                         name='FullConnection')
+
+        with tf.variable_scope('EncoderNetwork2', reuse=reuse):
+            eNet2 = tl.layers.Conv2d(prev_layer=inputLayer,
+                                     n_filter=16,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu1')
+            eNet2 = tl.layers.BatchNormLayer(prev_layer=eNet2,
+                                             name='BatchNorm1')
+            eNet2 = tl.layers.DropoutLayer(prev_layer=eNet2,
+                                           keep=0.7,
+                                           name='Dropout1')
+
+            eNet2 = tl.layers.Conv2d(prev_layer=eNet2,
+                                     n_filter=32,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu2')
+            eNet2 = tl.layers.BatchNormLayer(prev_layer=eNet2,
+                                             name='BatchNorm2')
+            eNet2 = tl.layers.DropoutLayer(prev_layer=eNet2,
+                                           keep=0.7,
+                                           name='Dropout2')
+
+            eNet2 = tl.layers.Conv2d(prev_layer=eNet2,
+                                     n_filter=64,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu3')
+            eNet2 = tl.layers.BatchNormLayer(prev_layer=eNet2,
+                                             name='BatchNorm3')
+            eNet2 = tl.layers.DropoutLayer(prev_layer=eNet2,
+                                           keep=0.7,
+                                           name='Dropout3')
+
+            eNet2 = tl.layers.Conv2d(prev_layer=eNet2,
+                                     n_filter=64,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu4')
+            eNet2 = tl.layers.BatchNormLayer(prev_layer=eNet2,
+                                             name='BatchNorm4')
+            eNet2 = tl.layers.DropoutLayer(prev_layer=eNet2,
+                                           keep=0.7,
+                                           name='Dropout4')
+
+            eNet2 = tl.layers.FlattenLayer(prev_layer=eNet2,
+                                           name='Flatten')
+            eNet2 = tl.layers.DenseLayer(prev_layer=eNet2,
+                                         n_units=100,
+                                         name='FullConnection')
+
+        with tf.variable_scope('EncoderNetwork3', reuse=reuse):
+            eNet3 = tl.layers.Conv2d(prev_layer=inputLayer,
+                                     n_filter=32,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu1')
+            eNet3 = tl.layers.BatchNormLayer(prev_layer=eNet3,
+                                             name='BatchNorm1')
+            eNet3 = tl.layers.DropoutLayer(prev_layer=eNet3,
+                                           keep=0.7,
+                                           name='Dropout1')
+
+            eNet3 = tl.layers.Conv2d(prev_layer=eNet3,
+                                     n_filter=64,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu2')
+            eNet3 = tl.layers.BatchNormLayer(prev_layer=eNet3,
+                                             name='BatchNorm2')
+            eNet3 = tl.layers.DropoutLayer(prev_layer=eNet3,
+                                           keep=0.7,
+                                           name='Dropout2')
+
+            eNet3 = tl.layers.Conv2d(prev_layer=eNet3,
+                                     n_filter=128,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu3')
+            eNet3 = tl.layers.BatchNormLayer(prev_layer=eNet3,
+                                             name='BatchNorm3')
+            eNet3 = tl.layers.DropoutLayer(prev_layer=eNet3,
+                                           keep=0.7,
+                                           name='Dropout3')
+
+            eNet3 = tl.layers.Conv2d(prev_layer=eNet3,
+                                     n_filter=128,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu4')
+            eNet3 = tl.layers.BatchNormLayer(prev_layer=eNet3,
+                                             name='BatchNorm4')
+            eNet3 = tl.layers.DropoutLayer(prev_layer=eNet3,
+                                           keep=0.7,
+                                           name='Dropout4')
+
+            eNet3 = tl.layers.Conv2d(prev_layer=eNet3,
+                                     n_filter=128,
+                                     filter_size=(4, 4),
+                                     strides=(2, 2),
+                                     act=tf.nn.relu,
+                                     name='ConvolutionRelu5')
+            eNet3 = tl.layers.BatchNormLayer(prev_layer=eNet3,
+                                             name='BatchNorm5')
+            eNet3 = tl.layers.DropoutLayer(prev_layer=eNet3,
+                                           keep=0.7,
+                                           name='Dropout5')
+
+            eNet3 = tl.layers.FlattenLayer(prev_layer=eNet3,
+                                           name='Flatten')
+            eNet3 = tl.layers.DenseLayer(prev_layer=eNet3,
+                                         n_units=100,
+                                         name='FullConnection')
+
+        concatLayer_fc = tl.layers.ConcatLayer(prev_layer=[eNet1, eNet2, eNet3],
+                                               concat_dim=1,
+                                               name='ConcatFullConnection')
+        return (eNet1.outputs,
+                eNet2.outputs,
+                eNet3.outputs,
+                concatLayer_fc.outputs)
 
 
 def decoder(R, reuse=False):
-    with tf.variable_scope('Decoder', reuse=reuse):
-        I_ = DNet(R, reuse=reuse)
-        return I_
+
+    with tf.variable_scope('DecoderModule', reuse=reuse):
+        inputLayer = tl.layers.InputLayer(inputs=R,
+                                          name='Input')
+        inputLayer = tl.layers.ReshapeLayer(prev_layer=inputLayer,
+                                            shape=(-1, 10, 10, 3),
+                                            name='Reshape')
+
+        with tf.variable_scope('DecoderNetwork', reuse=reuse):
+            dNet = tl.layers.DeConv2d(prev_layer=inputLayer,
+                                      n_filter=128,
+                                      filter_size=(4, 4),
+                                      strides=(2, 2),
+                                      act=tf.nn.relu,
+                                      name='DeconvolutionRelu1')
+
+            dNet = tl.layers.DeConv2d(prev_layer=dNet,
+                                      n_filter=128,
+                                      filter_size=(4, 4),
+                                      strides=(2, 2),
+                                      act=tf.nn.relu,
+                                      name='DeconvolutionRelu2')
+
+            dNet = tl.layers.DeConv2d(prev_layer=dNet,
+                                      n_filter=64,
+                                      filter_size=(4, 4),
+                                      strides=(2, 2),
+                                      act=tf.nn.relu,
+                                      name='DeconvolutionRelu3')
+
+            dNet = tl.layers.DeConv2d(prev_layer=dNet,
+                                      n_filter=32,
+                                      filter_size=(4, 4),
+                                      strides=(2, 2),
+                                      act=tf.nn.relu,
+                                      name='DeconvolutionRelu4')
+
+            dNet = tl.layers.DeConv2d(prev_layer=dNet,
+                                      n_filter=3,
+                                      filter_size=(4, 4),
+                                      strides=(2, 2),
+                                      act=tf.nn.relu,
+                                      name='DeconvolutionRelu5')
+
+        return tf.image.resize_images(images=dNet.outputs,
+                                      size=(128, 128))
 
 
 def attributes(part1, part2, reuse=False):
-    with tf.variable_scope('Attributes', reuse=reuse):
-        label1 = ANet_type1(part1, reuse=reuse)
-        label2 = ANet_type2(part2, reuse=reuse)
-        return label1, label2
+
+    with tf.variable_scope('SupervisedAttributesModule', reuse=reuse):
+        inputLayer1 = tl.layers.InputLayer(inputs=part1,
+                                           name='Input1')
+        inputLayer2 = tl.layers.InputLayer(inputs=part2,
+                                           name='Input2')
+
+        with tf.variable_scope('AttributesNetwork1', reuse=reuse):
+            aNet1 = tl.layers.DenseLayer(prev_layer=inputLayer1,
+                                         n_units=200,  # this num is just placeholder
+                                         act=tf.nn.softmax,
+                                         name='Dense')
+
+        with tf.variable_scope('AttributesNetwork2', reuse=reuse):
+            aNet2 = tl.layers.DenseLayer(prev_layer=inputLayer2,
+                                         n_units=300,  # this num is just placeholder
+                                         act=tf.nn.softmax,
+                                         name='Dense')
+
+        return (aNet1.outputs,
+                aNet2.outputs)
 
 
-def adversarial_prediction(R, reuse=False):
-    with tf.variable_scope('AdversarialPrediction', reuse=reuse):
-        part1 = PNet_1(R, reuse=reuse)
-        part2 = PNet_2(R, reuse=reuse)
-        part3 = PNet_3(R, reuse=reuse)
-        return part1, part2, part3
+def adversarialPrediction(R, reuse=False):
+
+    with tf.variable_scope('MultiIndependentBlock', reuse=reuse):
+        inputLayer = tl.layers.InputLayer(inputs=R,
+                                          name='Input')
+
+        with tf.variable_scope('AdversarialPredictionNetwork1', reuse=reuse):
+            pNet1 = tl.layers.DenseLayer(prev_layer=inputLayer,
+                                         n_units=256,
+                                         name='Dense1')
+
+            pNet1 = tl.layers.DenseLayer(prev_layer=pNet1,
+                                         n_units=128,
+                                         name='Dense2')
+
+            pNet1 = tl.layers.DenseLayer(prev_layer=pNet1,
+                                         n_units=100,
+                                         name='Dense3')
+
+        with tf.variable_scope('AdversarialPredictionNetwork2', reuse=reuse):
+            pNet2 = tl.layers.DenseLayer(prev_layer=inputLayer,
+                                         n_units=256,
+                                         name='Dense1')
+
+            pNet2 = tl.layers.DenseLayer(prev_layer=pNet2,
+                                         n_units=128,
+                                         name='Dense2')
+
+            pNet2 = tl.layers.DenseLayer(prev_layer=pNet2,
+                                         n_units=100,
+                                         name='Dense3')
+
+        with tf.variable_scope('AdversarialPredictionNetwork3', reuse=reuse):
+            pNet3 = tl.layers.DenseLayer(prev_layer=inputLayer,
+                                         n_units=256,
+                                         name='Dense1')
+
+            pNet3 = tl.layers.DenseLayer(prev_layer=pNet3,
+                                         n_units=128,
+                                         name='Dense2')
+
+            pNet3 = tl.layers.DenseLayer(prev_layer=pNet3,
+                                         n_units=100,
+                                         name='Dense3')
+
+        return (pNet1.outputs,
+                pNet2.outputs,
+                pNet3.outputs)

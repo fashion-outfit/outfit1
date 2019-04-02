@@ -16,3 +16,7 @@ A reoccurance of [Interpretable Partitioned Embedding for Customized Fashion Out
 1. Using the DeepFashion dataset, this implementation is now focusing on three main attributes: style, shape and remaining. This is slightly different from the original model.
 
 2. Furtherly dividing auto-encoder module into two parts: the encoder part and decoder part. No longer treating them as one. We make this modification to ease parameter sharing.
+
+3. 'Style feature vector' and 'shape feature vector' need to be constructed manually.
+
+4. Attributes network that mentioned in the original paper cannot be implemented due to the DeepFashion dataset we use. This part will now be implemented using Softmax or multi-class SVM instead.
