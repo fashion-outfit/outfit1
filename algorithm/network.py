@@ -2,10 +2,10 @@ import tensorflow as tf
 import tensorlayer as tl
 
 
-def encoder(I, reuse=False):
+def encoder(images, reuse=False):
 
     with tf.variable_scope('EncoderModule', reuse=reuse):
-        inputLayer = tl.layers.InputLayer(inputs=I,
+        inputLayer = tl.layers.InputLayer(inputs=images,
                                           name='Input')
 
         with tf.variable_scope('EncoderNetwork1', reuse=reuse):
@@ -173,19 +173,21 @@ def encoder(I, reuse=False):
                                          n_units=100,
                                          name='FullConnection')
 
-        concatLayer_fc = tl.layers.ConcatLayer(prev_layer=[eNet1, eNet2, eNet3],
-                                               concat_dim=1,
-                                               name='ConcatFullConnection')
-        return (eNet1.outputs,
-                eNet2.outputs,
-                eNet3.outputs,
-                concatLayer_fc.outputs)
+        concatLayer = tl.layers.ConcatLayer(prev_layer=[eNet1, eNet2, eNet3],
+                                            concat_dim=1,
+                                            name='ConcatFullConnection')
+
+        r1 = eNet1.outputs
+        r2 = eNet2.outputs
+        r3 = eNet3.outputs
+        R = concatLayer.outputs
+        return r1, eNet1, r2, eNet2, r3, eNet3, R, concatLayer
 
 
-def decoder(R, reuse=False):
+def decoder(embeddings, reuse=False):
 
     with tf.variable_scope('DecoderModule', reuse=reuse):
-        inputLayer = tl.layers.InputLayer(inputs=R,
+        inputLayer = tl.layers.InputLayer(inputs=embeddings,
                                           name='Input')
         inputLayer = tl.layers.ReshapeLayer(prev_layer=inputLayer,
                                             shape=(-1, 10, 10, 3),
@@ -227,8 +229,9 @@ def decoder(R, reuse=False):
                                       act=tf.nn.relu,
                                       name='DeconvolutionRelu5')
 
-        return tf.image.resize_images(images=dNet.outputs,
-                                      size=(128, 128))
+        I_ = dNet.outputs
+        I_ = tf.image.resize_images(I_, size=(128, 128))
+        return I_, dNet
 
 
 def attributes(part1, part2, reuse=False):
@@ -243,63 +246,65 @@ def attributes(part1, part2, reuse=False):
             aNet1 = tl.layers.DenseLayer(prev_layer=inputLayer1,
                                          n_units=200,  # this num is just placeholder
                                          act=tf.nn.softmax,
-                                         name='Dense')
+                                         name='FullConnection')
 
         with tf.variable_scope('AttributesNetwork2', reuse=reuse):
             aNet2 = tl.layers.DenseLayer(prev_layer=inputLayer2,
                                          n_units=300,  # this num is just placeholder
                                          act=tf.nn.softmax,
-                                         name='Dense')
+                                         name='FullConnection')
 
-        return (aNet1.outputs,
-                aNet2.outputs)
+        label1_ = aNet1.outputs
+        label2_ = aNet2.outputs
+        return label1_, aNet1, label2_, aNet2
 
 
-def adversarialPrediction(R, reuse=False):
+def adversarialPrediction(embeddings, reuse=False):
 
     with tf.variable_scope('MultiIndependentBlock', reuse=reuse):
-        inputLayer = tl.layers.InputLayer(inputs=R,
+        inputLayer = tl.layers.InputLayer(inputs=embeddings,
                                           name='Input')
 
         with tf.variable_scope('AdversarialPredictionNetwork1', reuse=reuse):
             pNet1 = tl.layers.DenseLayer(prev_layer=inputLayer,
                                          n_units=256,
-                                         name='Dense1')
+                                         name='FullConnection1')
 
             pNet1 = tl.layers.DenseLayer(prev_layer=pNet1,
                                          n_units=128,
-                                         name='Dense2')
+                                         name='FullConnection2')
 
             pNet1 = tl.layers.DenseLayer(prev_layer=pNet1,
                                          n_units=100,
-                                         name='Dense3')
+                                         name='FullConnection3')
 
         with tf.variable_scope('AdversarialPredictionNetwork2', reuse=reuse):
             pNet2 = tl.layers.DenseLayer(prev_layer=inputLayer,
                                          n_units=256,
-                                         name='Dense1')
+                                         name='FullConnection1')
 
             pNet2 = tl.layers.DenseLayer(prev_layer=pNet2,
                                          n_units=128,
-                                         name='Dense2')
+                                         name='FullConnection2')
 
             pNet2 = tl.layers.DenseLayer(prev_layer=pNet2,
                                          n_units=100,
-                                         name='Dense3')
+                                         name='FullConnection3')
 
         with tf.variable_scope('AdversarialPredictionNetwork3', reuse=reuse):
             pNet3 = tl.layers.DenseLayer(prev_layer=inputLayer,
                                          n_units=256,
-                                         name='Dense1')
+                                         name='FullConnection1')
 
             pNet3 = tl.layers.DenseLayer(prev_layer=pNet3,
                                          n_units=128,
-                                         name='Dense2')
+                                         name='FullConnection2')
 
             pNet3 = tl.layers.DenseLayer(prev_layer=pNet3,
                                          n_units=100,
-                                         name='Dense3')
+                                         name='FullConnection3')
 
-        return (pNet1.outputs,
-                pNet2.outputs,
-                pNet3.outputs)
+        part1 = pNet1.outputs
+        part2 = pNet2.outputs
+        part3 = pNet3.outputs
+        return part1, pNet1, part2, pNet2, part3, pNet3
