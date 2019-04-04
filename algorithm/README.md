@@ -1,5 +1,5 @@
 # Project Codename 'outfit1' - Alogirthm
-A reoccurance of [Interpretable Partitioned Embedding for Customized Fashion Outfit Composition](https://arxiv.org/abs/1806.04845). DeepFashion dataset download can be found [here](http://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/AttributePrediction.html).
+A reoccurance of [Interpretable Partitioned Embedding for Customized Fashion Outfit Composition](https://arxiv.org/abs/1806.04845). DeepFashion dataset download can be found [here](http://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/AttributePrediction.html). Polyvore dataset download can be fount [here](https://github.com/xthan/polyvore-dataset)
 
 ## Structure
 ```json

@@ -62,29 +62,25 @@ with tf.Session() as sess:
                                                   name='EncodingLossPartThree')
     encodingLoss = encoding1Loss + encoding2Loss + encoding3Loss
 
-    # optimizers
-    # auto-encoder optimizer
-    autoEncoderOptimizer = tl.optimizers.AMSGrad(learning_rate=0.01,
-                                                 beta1=0.9,
-                                                 beta2=0.999,
-                                                 name='EncoderOptimizer').minimize(loss=autoEncoderLoss,
-                                                                                   var_list=dNet.all_params)
+    # attributes loss
+    pass
 
-    # predicting optimizer
+    # total loss
+    alpha = 2
+    beta = 0.7
+    totalLoss = autoEncoderLoss + beta*(predictingLoss+encodingLoss)
+
+    # optimizer
+    autoEncoderParams = dNet.all_params
     predictingParams = pNet1.all_params + pNet2.all_params + pNet3.all_params
-    predictingOptimizer = tl.optimizers.AMSGrad(learning_rate=0.01,
-                                                beta1=0.9,
-                                                beta2=0.999,
-                                                name='PredictingOptimizer').minimize(loss=predictingLoss,
-                                                                                     var_list=predictingParams)
-
-    # encoding optimizer
     encodingParams = eNet1.all_params + eNet2.all_params + eNet3.all_params
-    encodingOptimizer = tl.optimizers.AMSGrad(learning_rate=0.01,
-                                              beta1=0.9,
-                                              beta2=0.999,
-                                              name='EncodingOptimizer').minimize(loss=encodingLoss,
-                                                                                 var_list=encodingParams)
+
+    totalParams = autoEncoderLoss + predictingLoss + encodingParams
+    totalOptimizer = tl.optimizers.AMSGrad(learning_rate=0.01,
+                                           beta1=0.9,
+                                           beta2=0.999,
+                                           name='TotalOptimizer').minimize(loss=totalLoss,
+                                                                           var_list=totalParams)
 
     tl.layers.initialize_global_variables(sess)
     dNet.print_layers()
