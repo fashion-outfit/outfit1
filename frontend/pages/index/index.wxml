@@ -1,0 +1,87 @@
+<!--index.wxml-->
+<view class="container-index">
+<view class="grid-index">
+<i-row>
+  <i-col span="4" i-class="col-class" wx:for="{{gridArray}}" wx:key="name">
+      <image src="{{item.img}}" class="grid-image"></image>
+      <view class="class-title">
+      {{item.name}}
+      </view>
+  </i-col>
+</i-row>
+</view>
+<view class="square" >
+<i-card full wx:for="{{[1,2]}}">
+    <view slot="content">
+      <view class="content-index">
+        <view class="content-left">
+          <image src="../../images/test.jpg" style="width:170px;height:220px;"></image>
+        </view>
+        <view class='content-right'>
+          <view class="content-right-title">条纹百搭T恤</view>
+          <view class="divLine"></view>
+          <view style="text-shadow: 0.5px 0.5px 0.5px #2d8cf0;"><i-icon type="label"/>标签</view>
+          <view class="content-right-label">
+            <i-tag 
+              class="i-tags"
+              name="百搭" 
+              type="border" 
+              color="red">
+              百搭
+          </i-tag>
+          <i-tag 
+              class="i-tags"
+              name="上衣" 
+              color="green"
+              type="border">
+              上衣
+          </i-tag>
+          <i-tag 
+              class="i-tags"
+              name="女生" 
+              color="blue"
+              type="border">
+              女生
+          </i-tag>
+          <i-tag 
+              class="i-tags"
+              name="T恤衫" 
+              color="green"
+              type="border">
+              T恤衫
+          </i-tag>
+          <i-tag 
+              class="i-tags"
+              name="条纹" 
+              color="yellow"
+              type="border">
+              条纹
+          </i-tag>
+          </view>
+          <view class="content-right-button">
+            <button type="primary" size="mini" id="btn1">购买链接</button>
+            <button type="primary" size="mini" id="btn2">她的推荐</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view slot="footer">
+    <view class="divLine"></view>
+      <i-row>
+        <i-col span="5">
+          <i-icon type="like"/>喜欢
+        </i-col>
+        <i-col span="5">
+          <i-icon type="message"/>评论(2)
+        </i-col>
+        <i-col span="14">
+          by 华夏墨子
+        </i-col>
+      </i-row>
+    </view>
+</i-card>
+</view>
+<view class="add">
+<image src='../../images/add.png' style='width:100rpx;height:100rpx' bindtap="add"></image>
+</view>
+</view>
