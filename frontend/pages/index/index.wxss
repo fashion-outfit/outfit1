@@ -1,0 +1,80 @@
+/**index.wxss**/
+.container-index{
+  padding-top:5%;
+  width: 100%;
+  height: 100%;
+  background-color: #f8f8f9;
+  text-align: center;
+}
+.add{
+  position: fixed;
+  right: 25rpx;
+  bottom: 20rpx;
+  padding:5rpx;
+  border-radius: 50%;
+}
+.class-title{
+  font-size: 12px;
+  color:#495060;
+}
+.grid-index{
+  background-color:#dddee1;
+  border-radius: 2%;
+  margin-bottom: 20px;
+  padding-bottom: 5px;
+}
+.grid-image{
+  width: 35px;
+  height: 35px;
+  padding:3px;
+  margin:3px 3px;
+  border-radius: 15px;
+  border-style: solid;
+  border-color:#2d8cf0;
+}
+.square{
+  width: 95%;
+  margin: auto;
+  text-align: center;
+}
+.divLine{
+  width: 100%;
+  height: 5rpx;
+  background-color:#e9eaec;
+  margin-bottom: 15rpx;
+}
+.content-index{
+  display: flex;
+  justify-content: center;
+}
+.content-left{
+  background-color: red;
+  width: 170px;
+  height: 220px;
+}
+.content-right{
+  width: 100px;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  border-style: solid;
+  border-color: #dddee1;
+  border-size:0.5rpx;
+  border-radius: 10rpx;
+}
+.content-right-title{
+  text-shadow: 1px 1px 1px #dddee1;
+  padding: 5px;
+}
+.content-right-button{
+  margin-top:15px;
+}
+.content-right-label{
+  display: flex;
+  justify-content: center;
+  margin-top:5px;
+  flex-wrap: wrap;
+}
+.content-right-button #btn1{
+  background-color:#2d8cf0;
+}

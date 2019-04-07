@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    
+    "pages/logs/logs",
+    "pages/mine/imne",
+    "pages/mine/mine",
+    "pages/upload/upload",
+    "pages/userEdit/userEdit"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#dddee1",
+    "navigationBarTitleText": "WeChat",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "搭配广场",
+        "iconPath": "images/index.png",
+        "selectedIconPath": "images/index_hover.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "个人中心",
+        "iconPath": "images/user.png",
+        "selectedIconPath": "images/user_hover.png"
+      }
+    ]
+  }
+}
